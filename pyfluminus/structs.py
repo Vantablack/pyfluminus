@@ -92,6 +92,26 @@ class Module:
             )
         return result
 
+    def announcements_full(self, auth: Dict, archived=False) -> Optional[List[Dict]]:
+        """  Returns a list of announcements for a given module.
+        The LumiNUS API provides 2 separate endpoints for archived and non-archived announcements. By default,
+        announcements are archived after roughly 16 weeks (hence, the end of the
+        semester) so most of the times, we should never need to access archived announcements.
+        """
+
+        fields = ["title", "description", "displayFrom"]
+        uri = "announcement/{}/{}?sortby=displayFrom%20ASC".format(
+            "Archived" if archived else "NonArchived", self.id
+        )
+        response = api(auth, uri)
+        if "error" in response:
+            return None
+        response = response["ok"]
+        if "data" not in response:
+            return None
+
+        return response["data"]
+
     def lessons(self, auth: Dict) -> Optional[List[Lesson]]:
         uri = "/lessonplan/Lesson/?ModuleID={}".format(self.id)
         response = api(auth, uri)["ok"]
